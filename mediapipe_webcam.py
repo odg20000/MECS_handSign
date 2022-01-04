@@ -2,27 +2,26 @@ import cv2
 import mediapipe as mp
 
 def print_landmarksNindex(img, landmarks, index_list):
+    #print("landmarks: ", landmarks) #인식 불가시 None
+    #print("landmarks.landmark: ", landmarks.landmark)
     if landmarks is None:
         #print("this landmarks are not access!!!!!!!!!!!11")
         return img
     shape = img.shape
 
-    for id, lm in enumerate(landmarks.landmark):
-        landmark_x = int(lm.x * shape[1])
-        landmark_y = int(lm.y * shape[0])
-        #cv2.circle(img, (landmark_x, landmark_y), 2, (0, 0, 225), -1)
-        #cv2.putText(img, str(id), (landmark_x, landmark_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 225, 0), 0)
-        for i in range(len(index_list)):
-            if id == index_list[i]:
-                cv2.circle(image, (landmark_x, landmark_y), 2, (0, 0, 225), -1)
-                cv2.putText(image, str(id), (landmark_x, landmark_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 225, 0), 0)
+    for i in index_list:
+        landmark_x = int(landmarks.landmark[i].x * shape[1])
+        landmark_y = int(landmarks.landmark[i].y * shape[0])
+        cv2.circle(image, (landmark_x, landmark_y), 2, (0, 0, 225), -1)
+        cv2.putText(image, str(i), (landmark_x, landmark_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 225, 0), 0)
+
     return img
 
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
-
 mp_holistic = mp.solutions.holistic
+
 face = [10, 234, 152, 454]
 
 # For webcam input:
