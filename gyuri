@@ -1,3 +1,258 @@
+import cv2
+import mediapipe as mp
+import sys
+import time
+import csv
+import os.path
+import numpy
 
-access from minjae
-hi~ from damin
+mp_holistic = mp.solutions.holistic # Holistic model
+mp_face_detection = mp.solutions.face_detection
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
+mp_hands = mp.solutions.hands
+
+orig_stdout = sys.stdout
+count = 0
+
+IF_FIRST_TIME_TO_DO = 1
+sign_type = 'ga'
+count_max = 300
+delay = 0.1
+file_name = 'testfile8.csv'
+
+vidcap = cv2.VideoCapture('C:/gyuri/MOV000239769_700X466.mp4')
+
+"""#count = 0
+
+while (vidcap.isOpened()):
+    ret, image = vidcap.read()
+
+    # 이미지 사이즈 960x540으로 변경
+    # image = cv2.resize(image, (960, 540))
+    # 1프레임당 하나씩 이미지 추출
+    # if(int(vidcap.get(1)) % 1 == 0):
+    print('Saved frame number : ' + str(int(vidcap.get(1))))
+    # 추출된 이미지가 저장되는 경로
+    cv2.imwrite("C:/gyuri/dad1/dad3/0%d.jpg" % count, image)
+    # print('Saved frame%d.jpg' % count)
+    count += 1
+
+vidcap.release()#"""
+
+def initializer():
+    sys.stdout = open(file_name, 'w', newline='')
+    wr = csv.writer(sys.stdout)
+    wr.writerow( #sign type를 frame number로 바꾸면 될듯,,?
+        ['FRAME_NUM', 'FACE_9_X', 'FACE_50_X', 'FACE_280_X', 'FACE_300_X', 'FACE_9_Y', 'FACE_50_Y', 'FACE_280_Y', 'FACE_300_Y',
+         'FACE_9_Z', 'FACE_50_Z', 'FACE_280_Z', 'FACE_300_Z',
+         'WRIST_X', 'THUMB_CMC_X', 'THUMB_MCP_X', 'THUMB_IP_X', 'THUMB_TIP_X', 'INDEX_FINGER_MCP_X', 'INDEX_FINGER_PIP_X', 'INDEX_FINGER_DIP_X',
+         'INDEX_FINGER_TIP_X', 'MIDDLE_FINGER_MCP_X', 'MIDDLE_FINGER_PIP_X', 'MIDDLE_FINGER_DIP_X', 'MIDDLE_FINGER_TIP_X', 'RING_FINGER_MCP_X', 'RING_FINGER_PIP_X',
+         'RING_FINGER_DIP_X', 'RING_FINGER_TIP_X', 'PINKY_MCP_X', 'PINKY_PIP_X', 'PINKY_DIP_X', 'PINKY_TIP_X', 'WRIST_Y', 'THUMB_CMC_Y', 'THUMB_MCP_Y', 'THUMB_IP_Y',
+         'THUMB_TIP_Y', 'INDEX_FINGER_MCP_Y', 'INDEX_FINGER_PIP_Y', 'INDEX_FINGER_DIP_Y', 'INDEX_FINGER_TIP_Y', 'MIDDLE_FINGER_MCP_Y', 'MIDDLE_FINGER_PIP_Y',
+         'MIDDLE_FINGER_DIP_Y', 'MIDDLE_FINGER_TIP_Y', 'RING_FINGER_PIP_Y', 'RING_FINGER_MCP_Y', 'RING_FINGER_DIP_Y', 'RING_FINGER_TIP_Y', 'PINKY_MCP_Y',
+         'PINKY_PIP_Y', 'PINKY_DIP_Y', 'PINKY_TIP_Y', 'WRIST_Z', 'THUMB_CMC_Z', 'THUMB_MCP_Z', 'THUMB_IP_Z', 'THUMB_TIP_Z', 'INDEX_FINGER_MCP_Z', 'INDEX_FINGER_PIP_Z',
+         'INDEX_FINGER_DIP_Z', 'INDEX_FINGER_TIP_Z', 'MIDDLE_FINGER_MCP_Z', 'MIDDLE_FINGER_PIP_Z', 'MIDDLE_FINGER_DIP_Z', 'MIDDLE_FINGER_TIP_Z', 'RING_FINGER_MCP_Z',
+         'RING_FINGER_PIP_Z', 'RING_FINGER_DIP_Z', 'RING_FINGER_TIP_Z', 'PINKY_MCP_Z', 'PINKY_PIP_Z', 'PINKY_DIP_Z', 'PINKY_TIP_Z'])
+    sys.stdout.close()
+    sys.stdout = orig_stdout
+
+
+if IF_FIRST_TIME_TO_DO == 1:
+    initializer()
+
+# For webcam input:
+cap = cv2.VideoCapture(0)
+
+with mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.5) as hands,\
+   mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face_detection,\
+   mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+    for i in os.listdir('C:/gyuri/dad1/dad3/'):
+        path = 'C:/gyuri/dad1/dad3/' + i
+        image = cv2.imread(path, cv2.IMREAD_COLOR)
+        imgRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        FlipImage = cv2.flip(imgRGB, 1)
+
+        results = holistic.process(imgRGB)
+        results1 = hands.process(imgRGB)
+        results2 = face_detection.process(imgRGB)
+
+        cv2.imshow('MediaPipe Hands', image)
+        # print(results1.multi_handedness)
+        print(i)
+        count += 1
+
+        if results.face_landmarks and results.right_hand_landmarks:
+            #for face_landmarks in results.face_landmarks:
+                face_list_x = []
+                face_list_y = []
+                face_list_z = []
+                left_finger_list_x = []
+                left_finger_list_y = []
+                left_finger_list_z = []
+                right_finger_list_x = []
+                right_finger_list_y = []
+                right_finger_list_z = []
+
+                for face_index in range(468):
+                    face_list_x.append(results.face_landmarks.landmark[face_index].x)
+                    face_list_y.append(results.face_landmarks.landmark[face_index].y)
+                    face_list_z.append(results.face_landmarks.landmark[face_index].z)
+
+                for finger_index in range(21):
+                    left_finger_list_x.append(results.right_hand_landmarks.landmark[finger_index].x)
+                    left_finger_list_y.append(results.right_hand_landmarks.landmark[finger_index].y)
+                    left_finger_list_z.append(results.right_hand_landmarks.landmark[finger_index].z)
+
+                # print(count, finger_list_x, finger_list_y)
+
+                sys.stdout = open(file_name, 'a', newline='')
+                wr = csv.writer(sys.stdout)
+
+                wr.writerow([count, face_list_x[8], face_list_x[50], face_list_x[280], face_list_x[300],
+                             face_list_y[8], face_list_y[50], face_list_y[280], face_list_y[300],
+                             face_list_z[8], face_list_z[50], face_list_z[280], face_list_z[300],
+                             left_finger_list_x[0], left_finger_list_x[1], left_finger_list_x[2], left_finger_list_x[3],
+                             left_finger_list_x[4], left_finger_list_x[5],
+                             left_finger_list_x[6], left_finger_list_x[7], left_finger_list_x[8], left_finger_list_x[9],
+                             left_finger_list_x[10],
+                             left_finger_list_x[11],
+                             left_finger_list_x[12], left_finger_list_x[13], left_finger_list_x[14],
+                             left_finger_list_x[15],
+                             left_finger_list_x[16], left_finger_list_x[17],
+                             left_finger_list_x[18], left_finger_list_x[19], left_finger_list_x[20],
+                             left_finger_list_y[0],
+                             left_finger_list_y[1], left_finger_list_y[2],
+                             left_finger_list_y[3], left_finger_list_y[4], left_finger_list_y[5], left_finger_list_y[6],
+                             left_finger_list_y[7],
+                             left_finger_list_y[8],
+                             left_finger_list_y[9], left_finger_list_y[10], left_finger_list_y[11],
+                             left_finger_list_y[12],
+                             left_finger_list_y[13], left_finger_list_y[14],
+                             left_finger_list_y[15], left_finger_list_y[16], left_finger_list_y[17],
+                             left_finger_list_y[18],
+                             left_finger_list_y[19], left_finger_list_y[20],
+                             left_finger_list_z[0], left_finger_list_z[1], left_finger_list_z[2], left_finger_list_z[3],
+                             left_finger_list_z[4],
+                             left_finger_list_z[5],
+                             left_finger_list_z[6], left_finger_list_z[7], left_finger_list_z[8], left_finger_list_z[9],
+                             left_finger_list_z[10],
+                             left_finger_list_z[11],
+                             left_finger_list_z[12], left_finger_list_z[13], left_finger_list_z[14],
+                             left_finger_list_z[15],
+                             left_finger_list_z[16], left_finger_list_z[17],
+                             left_finger_list_z[18], left_finger_list_z[19], left_finger_list_z[20]
+                     ])
+
+                sys.stdout.close()
+                sys.stdout = orig_stdout
+
+        else:
+                face_list_x = []
+                face_list_y = []
+                face_list_z = []
+                left_finger_list_x = []
+                left_finger_list_y = []
+                left_finger_list_z = []
+                right_finger_list_x = []
+                right_finger_list_y = []
+                right_finger_list_z = []
+
+                face_list_x = [0 for i in range(468)]
+                face_list_y = [0 for i in range(468)]
+                face_list_z = [0 for i in range(468)]
+
+                left_finger_list_x = [0 for i in range(21)]
+                left_finger_list_y = [0 for i in range(21)]
+                left_finger_list_z = [0 for i in range(21)]
+
+                right_finger_list_x = [0 for i in range(21)]
+                right_finger_list_y = [0 for i in range(21)]
+                right_finger_list_z = [0 for i in range(21)]
+
+                sys.stdout = open(file_name, 'a', newline='')
+                wr = csv.writer(sys.stdout)
+
+                wr.writerow([count, face_list_x[8], face_list_x[50], face_list_x[280], face_list_x[300],
+                             face_list_y[8], face_list_y[50], face_list_y[280], face_list_y[300],
+                             face_list_z[8], face_list_z[50], face_list_z[280], face_list_z[300],
+                             left_finger_list_x[0], left_finger_list_x[1], left_finger_list_x[2], left_finger_list_x[3],
+                             left_finger_list_x[4], left_finger_list_x[5],
+                             left_finger_list_x[6], left_finger_list_x[7], left_finger_list_x[8], left_finger_list_x[9],
+                             left_finger_list_x[10],
+                             left_finger_list_x[11],
+                             left_finger_list_x[12], left_finger_list_x[13], left_finger_list_x[14],
+                             left_finger_list_x[15],
+                             left_finger_list_x[16], left_finger_list_x[17],
+                             left_finger_list_x[18], left_finger_list_x[19], left_finger_list_x[20],
+                             left_finger_list_y[0],
+                             left_finger_list_y[1], left_finger_list_y[2],
+                             left_finger_list_y[3], left_finger_list_y[4], left_finger_list_y[5], left_finger_list_y[6],
+                             left_finger_list_y[7],
+                             left_finger_list_y[8],
+                             left_finger_list_y[9], left_finger_list_y[10], left_finger_list_y[11],
+                             left_finger_list_y[12],
+                             left_finger_list_y[13], left_finger_list_y[14],
+                             left_finger_list_y[15], left_finger_list_y[16], left_finger_list_y[17],
+                             left_finger_list_y[18],
+                             left_finger_list_y[19], left_finger_list_y[20],
+                             left_finger_list_z[0], left_finger_list_z[1], left_finger_list_z[2], left_finger_list_z[3],
+                             left_finger_list_z[4],
+                             left_finger_list_z[5],
+                             left_finger_list_z[6], left_finger_list_z[7], left_finger_list_z[8], left_finger_list_z[9],
+                             left_finger_list_z[10],
+                             left_finger_list_z[11],
+                             left_finger_list_z[12], left_finger_list_z[13], left_finger_list_z[14],
+                             left_finger_list_z[15],
+                             left_finger_list_z[16], left_finger_list_z[17],
+                             left_finger_list_z[18], left_finger_list_z[19], left_finger_list_z[20],
+                             right_finger_list_x[0], right_finger_list_x[1], right_finger_list_x[2],
+                             right_finger_list_x[3],
+                             right_finger_list_x[4], right_finger_list_x[5],
+                             right_finger_list_x[6], right_finger_list_x[7], right_finger_list_x[8],
+                             right_finger_list_x[9],
+                             right_finger_list_x[10],
+                             right_finger_list_x[11],
+                             right_finger_list_x[12], right_finger_list_x[13], right_finger_list_x[14],
+                             right_finger_list_x[15],
+                             right_finger_list_x[16], right_finger_list_x[17],
+                             right_finger_list_x[18], right_finger_list_x[19], right_finger_list_x[20],
+                             right_finger_list_y[0],
+                             right_finger_list_y[1], right_finger_list_y[2],
+                             right_finger_list_y[3], right_finger_list_y[4], right_finger_list_y[5],
+                             right_finger_list_y[6],
+                             right_finger_list_y[7],
+                             right_finger_list_y[8],
+                             right_finger_list_y[9], right_finger_list_y[10], right_finger_list_y[11],
+                             right_finger_list_y[12],
+                             right_finger_list_y[13], right_finger_list_y[14],
+                             right_finger_list_y[15], right_finger_list_y[16], right_finger_list_y[17],
+                             right_finger_list_y[18],
+                             right_finger_list_y[19], right_finger_list_y[20],
+                             right_finger_list_z[0], right_finger_list_z[1], right_finger_list_z[2],
+                             right_finger_list_z[3],
+                             right_finger_list_z[4],
+                             right_finger_list_z[5],
+                             right_finger_list_z[6], right_finger_list_z[7], right_finger_list_z[8],
+                             right_finger_list_z[9],
+                             right_finger_list_z[10],
+                             right_finger_list_z[11],
+                             right_finger_list_z[12], right_finger_list_z[13], right_finger_list_z[14],
+                             right_finger_list_z[15],
+                             right_finger_list_z[16], right_finger_list_z[17],
+                             right_finger_list_z[18], right_finger_list_z[19], right_finger_list_z[20]
+                             ])
+
+
+
+        #cv2.imshow('MediaPipe Hands', image)
+
+        if cv2.waitKey(5) & 0xFF == 27:
+            break
+
+        if count >= count_max:
+            break
+        else:
+            time.sleep(delay)
+
+cap.release()
