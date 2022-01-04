@@ -47,28 +47,16 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     # Draw landmark annotation on the image. holistic
     image = print_landmarksNindex(image, results.face_landmarks, face)
-
-    image = print_landmarksNindex(image, results.pose_landmarks, range(11, len(results.pose_landmarks.landmark)))
-    #mp_drawing.draw_landmarks( image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
+    image = print_landmarksNindex(image, results.pose_landmarks, range(11, 23))
 
     # Draw the hand annotations on the image.
-
-    mp_drawing.draw_landmarks(
-        image,
-        results.left_hand_landmarks,
-        mp_holistic.HAND_CONNECTIONS)
-    mp_drawing.draw_landmarks(
-        image,
-        results.right_hand_landmarks,
-        mp_holistic.HAND_CONNECTIONS)
+    mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+    mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
 
     # Flip the image horizontally for a selfie-view display.
-    image = cv2.resize(image, (2*960, 2*540))
+    image = cv2.resize(image, (960, 540))
     cv2.imshow('MediaPipe Hands', image)
     #cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
-
-    #print(results.right_hand_landmarks) -> 인식 못하면 Nome
-
 
     if cv2.waitKey(100) & 0xFF == 27:
       break
