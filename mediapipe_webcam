@@ -2,9 +2,8 @@ import cv2
 import mediapipe as mp
 
 def print_landmarksNindex(img, landmarks, index_list):
-    print(landmarks)
-    print(landmarks.landmark)
-    if not landmarks.landmark:
+    if landmarks is None:
+        #print("this landmarks are not access!!!!!!!!!!!11")
         return img
     shape = img.shape
 
