@@ -12,27 +12,77 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
+"""def print_landmarksNindex(img, landmarks, index_list):
+    print(landmarks)
+    print(landmarks.landmark)
+    if landmarks is None:
+        return img
+    shape = img.shape
+
+    for id, lm in enumerate(landmarks.landmark):
+        landmark_x = int(lm.x * shape[1])
+        landmark_y = int(lm.y * shape[0])
+        #cv2.circle(img, (landmark_x, landmark_y), 2, (0, 0, 225), -1)
+        #cv2.putText(img, str(id), (landmark_x, landmark_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 225, 0), 0)
+        for i in range(len(index_list)):
+            if id == index_list[i]:
+                cv2.circle(image, (landmark_x, landmark_y), 2, (0, 0, 225), -1)
+                cv2.putText(image, str(id), (landmark_x, landmark_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 225, 0), 0)
+    return img"""
+
+#face = [10, 234, 152, 454]
+
+# 동영상을 프레임단위로 이미지 저장할 때만 활성화되는 코드
+source_path = 'C:/Users/HanDaMin/Desktop/MECS/video_respect/respect02.MP4'
+video_cap = cv2.VideoCapture(source_path)
+
+#프레임으로 저장된 이미지에 mediapipe 씌우기
+#VIDEO_FRAME = []
+count = 0
+
 orig_stdout = sys.stdout
 
 delay = 0.1
 file_name = 'respect02.csv'
 
-# 동영상을 프레임단위로 이미지 저장할 때만 활성화되는 코드
-"""source_path = 'C:/Users/HanDaMin/Desktop/MECS/video_respect/respect02.MP4'
-video_cap = cv2.VideoCapture(source_path)
+sys.stdout = open(file_name, 'w', newline='')
+wr = csv.writer(sys.stdout)
 
-length = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = video_cap.get(cv2.CAP_PROP_FPS)
-
-print('length : ', length)
-print('width : ', width)
-print('height : ', height)
-print('fps : ', fps)
-
-count = 0
-
+wr.writerow(
+        ['FRAME_NUM', 'face_X[8]', 'face_X[50]', 'face_X[280]', 'face_X[300]', 'face_Y[8]',
+         'face_Y[50]', 'face_Y[280]', 'face_Y[300]', 'face_Z[8]', 'face_Z[50]', 'face_Z[280]', 'face_Z[300]',
+         'L_WRIST_X', 'L_THUMB_CMC_X', 'L_THUMB_MCP_X', 'L_THUMB_IP_X', 'L_THUMB_TIP_X', 'L_INDEX_FINGER_MCP_X',
+         'L_INDEX_FINGER_PIP_X', 'L_INDEX_FINGER_DIP_X', 'L_INDEX_FINGER_TIP_X', 'L_MIDDLE_FINGER_MCP_X',
+         'L_MIDDLE_FINGER_PIP_X', 'L_MIDDLE_FINGER_DIP_X', 'L_MIDDLE_FINGER_TIP_X', 'L_RING_FINGER_MCP_X',
+         'L_RING_FINGER_PIP_X', 'L_RING_FINGER_DIP_X', 'L_RING_FINGER_TIP_X', 'L_PINKY_MCP_X',
+         'L_PINKY_PIP_X', 'L_PINKY_DIP_X', 'L_PINKY_TIP_X', 'L_WRIST_Y', 'L_THUMB_CMC_Y', 'L_THUMB_MCP_Y',
+         'L_THUMB_IP_Y', 'L_THUMB_TIP_Y', 'L_INDEX_FINGER_MCP_Y', 'L_INDEX_FINGER_PIP_Y', 'L_INDEX_FINGER_DIP',
+         'L_INDEX_FINGER_TIP', 'L_MIDDLE_FINGER_MCP', 'L_MIDDLE_FINGER_PIP_Y', 'L_MIDDLE_FINGER_DIP_Y',
+         'L_MIDDLE_FINGER_TIP_Y', 'L_RING_FINGER_MCP_Y', 'L_RING_FINGER_PIP_Y', 'L_RING_FINGER_DIP_Y',
+         'L_RING_FINGER_TIP_Y', 'L_PINKY_MCP_Y', 'L_PINKY_PIP_Y', 'L_PINKY_DIP_Y', 'L_PINKY_TIP_Y', 'L_WRIST_Z',
+         'L_THUMB_CMC_Z', 'L_THUMB_MCP_Z', 'L_THUMB_IP_Z', 'L_THUMB_TIP_Z', 'L_INDEX_FINGER_MCP_Z',
+         'L_INDEX_FINGER_PIP_Z',
+         'L_INDEX_FINGER_DIP_Z', 'L_INDEX_FINGER_TIP_Z', 'L_MIDDLE_FINGER_MCP_Z', 'L_MIDDLE_FINGER_PIP_Z',
+         'L_MIDDLE_FINGER_DIP_Z', 'L_MIDDLE_FINGER_TIP_Z', 'L_RING_FINGER_MCP_Z', 'L_RING_FINGER_PIP_Z',
+         'L_RING_FINGER_DIP_Z', 'L_RING_FINGER_TIP_Z', 'L_PINKY_MCP_Z', 'L_PINKY_PIP_Z', 'L_PINKY_DIP_Z',
+         'L_PINKY_TIP_Z',
+         'R_WRIST_X', 'R_THUMB_CMC_X', 'R_THUMB_MCP_X', 'R_THUMB_IP_X', 'R_THUMB_TIP_X', 'R_INDEX_FINGER_MCP_X',
+         'R_INDEX_FINGER_PIP_X', 'R_INDEX_FINGER_DIP_X', 'R_INDEX_FINGER_TIP_X', 'R_MIDDLE_FINGER_MCP_X',
+         'R_MIDDLE_FINGER_PIP_X', 'R_MIDDLE_FINGER_DIP_X', 'R_MIDDLE_FINGER_TIP_X', 'R_RING_FINGER_MCP_X',
+         'R_RING_FINGER_PIP_X', 'R_RING_FINGER_DIP_X', 'R_RING_FINGER_TIP_X', 'R_PINKY_MCP_X',
+         'R_PINKY_PIP_X', 'R_PINKY_DIP_X', 'R_PINKY_TIP_X', 'R_WRIST_Y', 'R_THUMB_CMC_Y', 'R_THUMB_MCP_Y',
+         'R_THUMB_IP_Y', 'R_THUMB_TIP_Y', 'R_INDEX_FINGER_MCP_Y', 'R_INDEX_FINGER_PIP_Y', 'R_INDEX_FINGER_DIP',
+         'R_INDEX_FINGER_TIP', 'R_MIDDLE_FINGER_MCP', 'R_MIDDLE_FINGER_PIP_Y', 'R_MIDDLE_FINGER_DIP_Y',
+         'R_MIDDLE_FINGER_TIP_Y', 'R_RING_FINGER_MCP_Y', 'R_RING_FINGER_PIP_Y', 'R_RING_FINGER_DIP_Y',
+         'R_RING_FINGER_TIP_Y', 'R_PINKY_MCP_Y', 'R_PINKY_PIP_Y', 'R_PINKY_DIP_Y', 'R_PINKY_TIP_Y', 'R_WRIST_Z',
+         'R_THUMB_CMC_Z', 'R_THUMB_MCP_Z', 'R_THUMB_IP_Z', 'R_THUMB_TIP_Z', 'R_INDEX_FINGER_MCP_Z',
+         'R_INDEX_FINGER_PIP_Z',
+         'R_INDEX_FINGER_DIP_Z', 'R_INDEX_FINGER_TIP_Z', 'R_MIDDLE_FINGER_MCP_Z', 'R_MIDDLE_FINGER_PIP_Z',
+         'R_MIDDLE_FINGER_DIP_Z', 'R_MIDDLE_FINGER_TIP_Z', 'R_RING_FINGER_MCP_Z', 'R_RING_FINGER_PIP_Z',
+         'R_RING_FINGER_DIP_Z', 'R_RING_FINGER_TIP_Z', 'R_PINKY_MCP_Z', 'R_PINKY_PIP_Z', 'R_PINKY_DIP_Z',
+         'R_PINKY_TIP_Z'
+         ])
+sys.stdout.close()
 
 while(video_cap.isOpened()):
     ret, image = video_cap.read()
@@ -42,270 +92,200 @@ while(video_cap.isOpened()):
     if(int(video_cap.get(1))):
         print('Saved frame number : ' + str(int(video_cap.get(1))))
         # 추출된 이미지가 저장되는 경로
-        cv2.imwrite("C:/Users/HanDaMin/Desktop/MECS/video_respect/respect02/%d.jpg" % count, image) #저장해서 확인해보기
+        #cv2.imwrite("C:/Users/HanDaMin/Desktop/MECS/video_respect/respect02/%d.jpg" % count, image) #저장해서 확인해보기
         #VIDEO_FRAME.append(image)
+        #count += 1
+        #print('Saved frame%d.jpg' % count)
+
+    sys.stdout = open(file_name, 'a', newline='')
+    wr = csv.writer(sys.stdout)
+
+    count = 0
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        results = holistic.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
         count += 1
-        print('Saved frame%d.jpg' % count)
 
-video_cap.release()"""
+        face_list_x = []
+        face_list_y = []
+        face_list_z = []
+        pose_list_x = []
+        pose_list_y = []
+        pose_list_z = []
+        left_finger_list_x = []
+        left_finger_list_y = []
+        left_finger_list_z = []
+        right_finger_list_x = []
+        right_finger_list_y = []
+        right_finger_list_z = []
 
-#프레임으로 저장된 이미지에 mediapipe 씌우기
-VIDEO_FRAME = []
+        # if results.face_landmarks and results.left_hand_landmarks and results.right_hand_landmarks:
+        if not results.face_landmarks:
+            face_list_x = [0 for i in range(468)]
+            face_list_y = [0 for i in range(468)]
+            face_list_z = [0 for i in range(468)]
+        elif not results.pose_landmarks:
+            pose_list_x = [0 for i in range(22)]
+            pose_list_y = [0 for i in range(22)]
+            pose_list_z = [0 for i in range(22)]
+        elif not results.left_hand_landmarks:
+            left_finger_list_x = [0 for i in range(21)]
+            left_finger_list_y = [0 for i in range(21)]
+            left_finger_list_z = [0 for i in range(21)]
+        elif not results.right_hand_landmarks:
+            right_finger_list_x = [0 for i in range(21)]
+            right_finger_list_y = [0 for i in range(21)]
+            right_finger_list_z = [0 for i in range(21)]
+        else:
+            for face_index in range(468):
+                face_list_x.append(results.face_landmarks.landmark[face_index].x)
+                face_list_y.append(results.face_landmarks.landmark[face_index].y)
+                face_list_z.append(results.face_landmarks.landmark[face_index].z)
 
-frame_path = 'C:/Users/HanDaMin/Desktop/MECS/video_respect/respect02'
-for i in range(90):
-    VIDEO_FRAME.append(frame_path + '/' + str(i) + '.jpg')
-    print(i)
+            for pose_index in range(22):
+                pose_list_x.append(results.pose_landmarks.landmark[pose_index].x)
+                pose_list_y.append(results.pose_landmarks.landmark[pose_index].y)
+                pose_list_z.append(results.pose_landmarks.landmark[pose_index].z)
 
-sys.stdout = open(file_name, 'w', newline='')
-wr = csv.writer(sys.stdout)
-wr.writerow(
-    ['FRAME_NUM', 'face_X[8]', 'face_X[50]', 'face_X[280]', 'face_X[300]', 'face_X[8]',
-     'face_Y[50]', 'face_Y[280]', 'face_Y[300]', 'face_Z[8]', 'face_Z[50]', 'face_Z[280]', 'face_Z[300]',
-     'L_WRIST_X', 'L_THUMB_CMC_X', 'L_THUMB_MCP_X', 'L_THUMB_IP_X', 'L_THUMB_TIP_X', 'L_INDEX_FINGER_MCP_X',
-     'L_INDEX_FINGER_PIP_X', 'L_INDEX_FINGER_DIP_X', 'L_INDEX_FINGER_TIP_X', 'L_MIDDLE_FINGER_MCP_X',
-     'L_MIDDLE_FINGER_PIP_X', 'L_MIDDLE_FINGER_DIP_X', 'L_MIDDLE_FINGER_TIP_X', 'L_RING_FINGER_MCP_X',
-     'L_RING_FINGER_PIP_X', 'L_RING_FINGER_DIP_X', 'L_RING_FINGER_TIP_X', 'L_PINKY_MCP_X',
-     'L_PINKY_PIP_X', 'L_PINKY_DIP_X', 'L_PINKY_TIP_X', 'L_WRIST_Y', 'L_THUMB_CMC_Y', 'L_THUMB_MCP_Y',
-     'L_THUMB_IP_Y', 'L_THUMB_TIP_Y', 'L_INDEX_FINGER_MCP_Y', 'L_INDEX_FINGER_PIP_Y', 'L_INDEX_FINGER_DIP',
-     'L_INDEX_FINGER_TIP', 'L_MIDDLE_FINGER_MCP', 'L_MIDDLE_FINGER_PIP_Y', 'L_MIDDLE_FINGER_DIP_Y',
-     'L_MIDDLE_FINGER_TIP_Y', 'L_RING_FINGER_MCP_Y', 'L_RING_FINGER_PIP_Y', 'L_RING_FINGER_DIP_Y',
-     'L_RING_FINGER_TIP_Y', 'L_PINKY_MCP_Y', 'L_PINKY_PIP_Y', 'L_PINKY_DIP_Y', 'L_PINKY_TIP_Y', 'L_WRIST_Z',
-     'L_THUMB_CMC_Z', 'L_THUMB_MCP_Z', 'L_THUMB_IP_Z', 'L_THUMB_TIP_Z', 'L_INDEX_FINGER_MCP_Z', 'L_INDEX_FINGER_PIP_Z',
-     'L_INDEX_FINGER_DIP_Z', 'L_INDEX_FINGER_TIP_Z', 'L_MIDDLE_FINGER_MCP_Z', 'L_MIDDLE_FINGER_PIP_Z',
-     'L_MIDDLE_FINGER_DIP_Z', 'L_MIDDLE_FINGER_TIP_Z', 'L_RING_FINGER_MCP_Z', 'L_RING_FINGER_PIP_Z',
-     'L_RING_FINGER_DIP_Z', 'L_RING_FINGER_TIP_Z', 'L_PINKY_MCP_Z', 'L_PINKY_PIP_Z', 'L_PINKY_DIP_Z', 'L_PINKY_TIP_Z',
-     'R_WRIST_X', 'R_THUMB_CMC_X', 'R_THUMB_MCP_X', 'R_THUMB_IP_X', 'R_THUMB_TIP_X', 'R_INDEX_FINGER_MCP_X',
-     'R_INDEX_FINGER_PIP_X', 'R_INDEX_FINGER_DIP_X', 'R_INDEX_FINGER_TIP_X', 'R_MIDDLE_FINGER_MCP_X',
-     'R_MIDDLE_FINGER_PIP_X', 'R_MIDDLE_FINGER_DIP_X', 'R_MIDDLE_FINGER_TIP_X', 'R_RING_FINGER_MCP_X',
-     'R_RING_FINGER_PIP_X', 'R_RING_FINGER_DIP_X', 'R_RING_FINGER_TIP_X', 'R_PINKY_MCP_X',
-     'R_PINKY_PIP_X', 'R_PINKY_DIP_X', 'R_PINKY_TIP_X', 'R_WRIST_Y', 'R_THUMB_CMC_Y', 'R_THUMB_MCP_Y',
-     'R_THUMB_IP_Y', 'R_THUMB_TIP_Y', 'R_INDEX_FINGER_MCP_Y', 'R_INDEX_FINGER_PIP_Y', 'R_INDEX_FINGER_DIP',
-     'R_INDEX_FINGER_TIP', 'R_MIDDLE_FINGER_MCP', 'R_MIDDLE_FINGER_PIP_Y', 'R_MIDDLE_FINGER_DIP_Y',
-     'R_MIDDLE_FINGER_TIP_Y', 'R_RING_FINGER_MCP_Y', 'R_RING_FINGER_PIP_Y', 'R_RING_FINGER_DIP_Y',
-     'R_RING_FINGER_TIP_Y', 'R_PINKY_MCP_Y', 'R_PINKY_PIP_Y', 'R_PINKY_DIP_Y', 'R_PINKY_TIP_Y', 'R_WRIST_Z',
-     'R_THUMB_CMC_Z', 'R_THUMB_MCP_Z', 'R_THUMB_IP_Z', 'R_THUMB_TIP_Z', 'R_INDEX_FINGER_MCP_Z', 'R_INDEX_FINGER_PIP_Z',
-     'R_INDEX_FINGER_DIP_Z', 'R_INDEX_FINGER_TIP_Z', 'R_MIDDLE_FINGER_MCP_Z', 'R_MIDDLE_FINGER_PIP_Z',
-     'R_MIDDLE_FINGER_DIP_Z', 'R_MIDDLE_FINGER_TIP_Z', 'R_RING_FINGER_MCP_Z', 'R_RING_FINGER_PIP_Z',
-     'R_RING_FINGER_DIP_Z', 'R_RING_FINGER_TIP_Z', 'R_PINKY_MCP_Z', 'R_PINKY_PIP_Z', 'R_PINKY_DIP_Z', 'R_PINKY_TIP_Z'
-     ])
-sys.stdout.close()
+            for finger_index_left in range(21):
+                left_finger_list_x.append(results.left_hand_landmarks.landmark[finger_index_left].x)
+                left_finger_list_y.append(results.left_hand_landmarks.landmark[finger_index_left].y)
+                left_finger_list_z.append(results.left_hand_landmarks.landmark[finger_index_left].z)
 
-sys.stdout = open(file_name, 'a', newline='')
-wr = csv.writer(sys.stdout)
+            for finger_index_right in range(21):
+                right_finger_list_x.append(results.right_hand_landmarks.landmark[finger_index_right].x)
+                right_finger_list_y.append(results.right_hand_landmarks.landmark[finger_index_right].y)
+                right_finger_list_z.append(results.right_hand_landmarks.landmark[finger_index_right].z)
 
-count = 0
-with mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.5) as hands, \
-        mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face_detection, \
-        mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-        for idx, file in enumerate(VIDEO_FRAME):
-            # Read an image, flip it around y-axis for correct handedness output (see above).
+            # print(count, finger_list_x, finger_list_y)
 
-            image = cv2.flip(cv2.imread(file), 0)
-            # Convert the BGR image to RGB before processing.
-            #results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-            results = holistic.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-            #results1 = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-            #results2 = face_detection.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            #sys.stdout = open(file_name, 'a', newline='')
+            #wr = csv.writer(sys.stdout)
+            # 10, 234, 152, 454
+            wr.writerow([count, face_list_x[10], face_list_x[234], face_list_x[152], face_list_x[454],
+                         face_list_y[10], face_list_y[234], face_list_y[152], face_list_y[454],
+                         face_list_z[10], face_list_z[234], face_list_z[152], face_list_z[454],
+                         pose_list_x[18], pose_list_x[20],
+                         left_finger_list_x[0], left_finger_list_x[1], left_finger_list_x[2], left_finger_list_x[3],
+                         left_finger_list_x[4], left_finger_list_x[5],
+                         left_finger_list_x[6], left_finger_list_x[7], left_finger_list_x[8], left_finger_list_x[9],
+                         left_finger_list_x[10],
+                         left_finger_list_x[11],
+                         left_finger_list_x[12], left_finger_list_x[13], left_finger_list_x[14],
+                         left_finger_list_x[15],
+                         left_finger_list_x[16], left_finger_list_x[17],
+                         left_finger_list_x[18], left_finger_list_x[19], left_finger_list_x[20],
+                         left_finger_list_y[0],
+                         left_finger_list_y[1], left_finger_list_y[2],
+                         left_finger_list_y[3], left_finger_list_y[4], left_finger_list_y[5], left_finger_list_y[6],
+                         left_finger_list_y[7],
+                         left_finger_list_y[8],
+                         left_finger_list_y[9], left_finger_list_y[10], left_finger_list_y[11],
+                         left_finger_list_y[12],
+                         left_finger_list_y[13], left_finger_list_y[14],
+                         left_finger_list_y[15], left_finger_list_y[16], left_finger_list_y[17],
+                         left_finger_list_y[18],
+                         left_finger_list_y[19], left_finger_list_y[20],
+                         left_finger_list_z[0], left_finger_list_z[1], left_finger_list_z[2], left_finger_list_z[3],
+                         left_finger_list_z[4],
+                         left_finger_list_z[5],
+                         left_finger_list_z[6], left_finger_list_z[7], left_finger_list_z[8], left_finger_list_z[9],
+                         left_finger_list_z[10],
+                         left_finger_list_z[11],
+                         left_finger_list_z[12], left_finger_list_z[13], left_finger_list_z[14],
+                         left_finger_list_z[15],
+                         left_finger_list_z[16], left_finger_list_z[17],
+                         left_finger_list_z[18], left_finger_list_z[19], left_finger_list_z[20],
+                         right_finger_list_x[0], right_finger_list_x[1], right_finger_list_x[2],
+                         right_finger_list_x[3],
+                         right_finger_list_x[4], right_finger_list_x[5],
+                         right_finger_list_x[6], right_finger_list_x[7], right_finger_list_x[8],
+                         right_finger_list_x[9],
+                         right_finger_list_x[10],
+                         right_finger_list_x[11],
+                         right_finger_list_x[12], right_finger_list_x[13], right_finger_list_x[14],
+                         right_finger_list_x[15],
+                         right_finger_list_x[16], right_finger_list_x[17],
+                         right_finger_list_x[18], right_finger_list_x[19], right_finger_list_x[20],
+                         right_finger_list_y[0],
+                         right_finger_list_y[1], right_finger_list_y[2],
+                         right_finger_list_y[3], right_finger_list_y[4], right_finger_list_y[5],
+                         right_finger_list_y[6],
+                         right_finger_list_y[7],
+                         right_finger_list_y[8],
+                         right_finger_list_y[9], right_finger_list_y[10], right_finger_list_y[11],
+                         right_finger_list_y[12],
+                         right_finger_list_y[13], right_finger_list_y[14],
+                         right_finger_list_y[15], right_finger_list_y[16], right_finger_list_y[17],
+                         right_finger_list_y[18],
+                         right_finger_list_y[19], right_finger_list_y[20],
+                         right_finger_list_z[0], right_finger_list_z[1], right_finger_list_z[2],
+                         right_finger_list_z[3],
+                         right_finger_list_z[4],
+                         right_finger_list_z[5],
+                         right_finger_list_z[6], right_finger_list_z[7], right_finger_list_z[8],
+                         right_finger_list_z[9],
+                         right_finger_list_z[10],
+                         right_finger_list_z[11],
+                         right_finger_list_z[12], right_finger_list_z[13], right_finger_list_z[14],
+                         right_finger_list_z[15],
+                         right_finger_list_z[16], right_finger_list_z[17],
+                         right_finger_list_z[18], right_finger_list_z[19], right_finger_list_z[20]
+                         ])
+    sys.stdout.close()
+    sys.stdout = orig_stdout
 
-            count += 1
+video_cap.release()
 
-            if results.face_landmarks and results.left_hand_landmarks and results.right_hand_landmarks:
-                # for face_landmarks in results.face_landmarks:
-                face_list_x = []
-                face_list_y = []
-                face_list_z = []
-                left_finger_list_x = []
-                left_finger_list_y = []
-                left_finger_list_z = []
-                right_finger_list_x = []
-                right_finger_list_y = []
-                right_finger_list_z = []
+# For webcam input:
+#cap = cv2.VideoCapture('C:\\Users\\PKNU\\Downloads\\hand_sign_THANKYOU2.mp4')
+"""cap = cv2.VideoCapture(0)
+with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+  while cap.isOpened():
+    success, image = cap.read()
+    image = cv2.flip(image, 1)
+    if not success:
+      print("Ignoring empty camera frame.")
+      # If loading a video, use 'break' instead of 'continue'.
+      break
 
-                for face_index in range(468):
-                    face_list_x.append(results.face_landmarks.landmark[face_index].x)
-                    face_list_y.append(results.face_landmarks.landmark[face_index].y)
-                    face_list_z.append(results.face_landmarks.landmark[face_index].z)
+    # To improve performance, optionally mark the image as not writeable to
+    # pass by reference.
+    image.flags.writeable = False
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    results = holistic.process(image)
 
-                for finger_index_left in range(21):
-                    left_finger_list_x.append(results.left_hand_landmarks.landmark[finger_index_left].x)
-                    left_finger_list_y.append(results.left_hand_landmarks.landmark[finger_index_left].y)
-                    left_finger_list_z.append(results.left_hand_landmarks.landmark[finger_index_left].z)
+    image.flags.writeable = True
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    # Draw landmark annotation on the image. holistic
+    image = print_landmarksNindex(image, results.face_landmarks, face)
 
-                for finger_index_right in range(21):
-                    right_finger_list_x.append(results.right_hand_landmarks.landmark[finger_index_right].x)
-                    right_finger_list_y.append(results.right_hand_landmarks.landmark[finger_index_right].y)
-                    right_finger_list_z.append(results.right_hand_landmarks.landmark[finger_index_right].z)
+    image = print_landmarksNindex(image, results.pose_landmarks, range(11, len(results.pose_landmarks.landmark)))
+    #mp_drawing.draw_landmarks( image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
 
-                # print(count, finger_list_x, finger_list_y)
+    # Draw the hand annotations on the image.
 
-                sys.stdout = open(file_name, 'a', newline='')
-                wr = csv.writer(sys.stdout)
+    mp_drawing.draw_landmarks(
+        image,
+        results.left_hand_landmarks,
+        mp_holistic.HAND_CONNECTIONS)
+    mp_drawing.draw_landmarks(
+        image,
+        results.right_hand_landmarks,
+        mp_holistic.HAND_CONNECTIONS)
 
-                wr.writerow([count, face_list_x[8], face_list_x[50], face_list_x[280], face_list_x[300],
-                             face_list_y[8], face_list_y[50], face_list_y[280], face_list_y[300],
-                             face_list_z[8], face_list_z[50], face_list_z[280], face_list_z[300],
-                             left_finger_list_x[0], left_finger_list_x[1], left_finger_list_x[2], left_finger_list_x[3],
-                             left_finger_list_x[4], left_finger_list_x[5],
-                             left_finger_list_x[6], left_finger_list_x[7], left_finger_list_x[8], left_finger_list_x[9],
-                             left_finger_list_x[10],
-                             left_finger_list_x[11],
-                             left_finger_list_x[12], left_finger_list_x[13], left_finger_list_x[14],
-                             left_finger_list_x[15],
-                             left_finger_list_x[16], left_finger_list_x[17],
-                             left_finger_list_x[18], left_finger_list_x[19], left_finger_list_x[20],
-                             left_finger_list_y[0],
-                             left_finger_list_y[1], left_finger_list_y[2],
-                             left_finger_list_y[3], left_finger_list_y[4], left_finger_list_y[5], left_finger_list_y[6],
-                             left_finger_list_y[7],
-                             left_finger_list_y[8],
-                             left_finger_list_y[9], left_finger_list_y[10], left_finger_list_y[11],
-                             left_finger_list_y[12],
-                             left_finger_list_y[13], left_finger_list_y[14],
-                             left_finger_list_y[15], left_finger_list_y[16], left_finger_list_y[17],
-                             left_finger_list_y[18],
-                             left_finger_list_y[19], left_finger_list_y[20],
-                             left_finger_list_z[0], left_finger_list_z[1], left_finger_list_z[2], left_finger_list_z[3],
-                             left_finger_list_z[4],
-                             left_finger_list_z[5],
-                             left_finger_list_z[6], left_finger_list_z[7], left_finger_list_z[8], left_finger_list_z[9],
-                             left_finger_list_z[10],
-                             left_finger_list_z[11],
-                             left_finger_list_z[12], left_finger_list_z[13], left_finger_list_z[14],
-                             left_finger_list_z[15],
-                             left_finger_list_z[16], left_finger_list_z[17],
-                             left_finger_list_z[18], left_finger_list_z[19], left_finger_list_z[20],
-                             right_finger_list_x[0], right_finger_list_x[1], right_finger_list_x[2], right_finger_list_x[3],
-                             right_finger_list_x[4], right_finger_list_x[5],
-                             right_finger_list_x[6], right_finger_list_x[7], right_finger_list_x[8], right_finger_list_x[9],
-                             right_finger_list_x[10],
-                             right_finger_list_x[11],
-                             right_finger_list_x[12], right_finger_list_x[13], right_finger_list_x[14],
-                             right_finger_list_x[15],
-                             right_finger_list_x[16], right_finger_list_x[17],
-                             right_finger_list_x[18], right_finger_list_x[19], right_finger_list_x[20],
-                             right_finger_list_y[0],
-                             right_finger_list_y[1], right_finger_list_y[2],
-                             right_finger_list_y[3], right_finger_list_y[4], right_finger_list_y[5], right_finger_list_y[6],
-                             right_finger_list_y[7],
-                             right_finger_list_y[8],
-                             right_finger_list_y[9], right_finger_list_y[10], right_finger_list_y[11],
-                             right_finger_list_y[12],
-                             right_finger_list_y[13], right_finger_list_y[14],
-                             right_finger_list_y[15], right_finger_list_y[16], right_finger_list_y[17],
-                             right_finger_list_y[18],
-                             right_finger_list_y[19], right_finger_list_y[20],
-                             right_finger_list_z[0], right_finger_list_z[1], right_finger_list_z[2], right_finger_list_z[3],
-                             right_finger_list_z[4],
-                             right_finger_list_z[5],
-                             right_finger_list_z[6], right_finger_list_z[7], right_finger_list_z[8], right_finger_list_z[9],
-                             right_finger_list_z[10],
-                             right_finger_list_z[11],
-                             right_finger_list_z[12], right_finger_list_z[13], right_finger_list_z[14],
-                             right_finger_list_z[15],
-                             right_finger_list_z[16], right_finger_list_z[17],
-                             right_finger_list_z[18], right_finger_list_z[19], right_finger_list_z[20]
-                             ])
+    # Flip the image horizontally for a selfie-view display.
+    #image = cv2.resize(image, (2*960, 2*540))
+    image = cv2.resize(image, (960, 540))
+    cv2.imshow('MediaPipe Hands', image)
+    #cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
 
-                sys.stdout.close()
-                sys.stdout = orig_stdout
+    #print(results.right_hand_landmarks) -> 인식 못하면 Nome
 
-            else:
-                face_list_x = []
-                face_list_y = []
-                face_list_z = []
-                left_finger_list_x = []
-                left_finger_list_y = []
-                left_finger_list_z = []
-                right_finger_list_x = []
-                right_finger_list_y = []
-                right_finger_list_z = []
 
-                face_list_x = [0 for i in range(468)]
-                face_list_y = [0 for i in range(468)]
-                face_list_z = [0 for i in range(468)]
+    if cv2.waitKey(100) & 0xFF == 27:
+      break
 
-                left_finger_list_x = [0 for i in range(21)]
-                left_finger_list_y = [0 for i in range(21)]
-                left_finger_list_z = [0 for i in range(21)]
+cap.release()"""
 
-                right_finger_list_x = [0 for i in range(21)]
-                right_finger_list_y = [0 for i in range(21)]
-                right_finger_list_z = [0 for i in range(21)]
-
-                sys.stdout = open(file_name, 'a', newline='')
-                wr = csv.writer(sys.stdout)
-                wr.writerow([count, face_list_x[8], face_list_x[50], face_list_x[280], face_list_x[300],
-                             face_list_y[8], face_list_y[50], face_list_y[280], face_list_y[300],
-                             face_list_z[8], face_list_z[50], face_list_z[280], face_list_z[300],
-                             left_finger_list_x[0], left_finger_list_x[1], left_finger_list_x[2], left_finger_list_x[3],
-                             left_finger_list_x[4], left_finger_list_x[5],
-                             left_finger_list_x[6], left_finger_list_x[7], left_finger_list_x[8], left_finger_list_x[9],
-                             left_finger_list_x[10],
-                             left_finger_list_x[11],
-                             left_finger_list_x[12], left_finger_list_x[13], left_finger_list_x[14],
-                             left_finger_list_x[15],
-                             left_finger_list_x[16], left_finger_list_x[17],
-                             left_finger_list_x[18], left_finger_list_x[19], left_finger_list_x[20],
-                             left_finger_list_y[0],
-                             left_finger_list_y[1], left_finger_list_y[2],
-                             left_finger_list_y[3], left_finger_list_y[4], left_finger_list_y[5], left_finger_list_y[6],
-                             left_finger_list_y[7],
-                             left_finger_list_y[8],
-                             left_finger_list_y[9], left_finger_list_y[10], left_finger_list_y[11],
-                             left_finger_list_y[12],
-                             left_finger_list_y[13], left_finger_list_y[14],
-                             left_finger_list_y[15], left_finger_list_y[16], left_finger_list_y[17],
-                             left_finger_list_y[18],
-                             left_finger_list_y[19], left_finger_list_y[20],
-                             left_finger_list_z[0], left_finger_list_z[1], left_finger_list_z[2], left_finger_list_z[3],
-                             left_finger_list_z[4],
-                             left_finger_list_z[5],
-                             left_finger_list_z[6], left_finger_list_z[7], left_finger_list_z[8], left_finger_list_z[9],
-                             left_finger_list_z[10],
-                             left_finger_list_z[11],
-                             left_finger_list_z[12], left_finger_list_z[13], left_finger_list_z[14],
-                             left_finger_list_z[15],
-                             left_finger_list_z[16], left_finger_list_z[17],
-                             left_finger_list_z[18], left_finger_list_z[19], left_finger_list_z[20],
-                             right_finger_list_x[0], right_finger_list_x[1], right_finger_list_x[2],
-                             right_finger_list_x[3],
-                             right_finger_list_x[4], right_finger_list_x[5],
-                             right_finger_list_x[6], right_finger_list_x[7], right_finger_list_x[8],
-                             right_finger_list_x[9],
-                             right_finger_list_x[10],
-                             right_finger_list_x[11],
-                             right_finger_list_x[12], right_finger_list_x[13], right_finger_list_x[14],
-                             right_finger_list_x[15],
-                             right_finger_list_x[16], right_finger_list_x[17],
-                             right_finger_list_x[18], right_finger_list_x[19], right_finger_list_x[20],
-                             right_finger_list_y[0],
-                             right_finger_list_y[1], right_finger_list_y[2],
-                             right_finger_list_y[3], right_finger_list_y[4], right_finger_list_y[5],
-                             right_finger_list_y[6],
-                             right_finger_list_y[7],
-                             right_finger_list_y[8],
-                             right_finger_list_y[9], right_finger_list_y[10], right_finger_list_y[11],
-                             right_finger_list_y[12],
-                             right_finger_list_y[13], right_finger_list_y[14],
-                             right_finger_list_y[15], right_finger_list_y[16], right_finger_list_y[17],
-                             right_finger_list_y[18],
-                             right_finger_list_y[19], right_finger_list_y[20],
-                             right_finger_list_z[0], right_finger_list_z[1], right_finger_list_z[2],
-                             right_finger_list_z[3],
-                             right_finger_list_z[4],
-                             right_finger_list_z[5],
-                             right_finger_list_z[6], right_finger_list_z[7], right_finger_list_z[8],
-                             right_finger_list_z[9],
-                             right_finger_list_z[10],
-                             right_finger_list_z[11],
-                             right_finger_list_z[12], right_finger_list_z[13], right_finger_list_z[14],
-                             right_finger_list_z[15],
-                             right_finger_list_z[16], right_finger_list_z[17],
-                             right_finger_list_z[18], right_finger_list_z[19], right_finger_list_z[20]
-                             ])
-
-                sys.stdout.close()
-
-sys.stdout = orig_stdout
-
+#=====================================================================================================================
