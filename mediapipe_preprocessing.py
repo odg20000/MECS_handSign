@@ -204,15 +204,15 @@ cap.release()
 #각 좌표들의 정규화 필요
 #1. 모든 이미지 크기 동일화 = 원본이미지의 너비와 높이로 나눠주면 문제 없음.
 #하나의 죄표를 원점으로 하는 상대좌표 화가 필요 -> 절대로 인식되는 좌표를 원점으로!
-    #전제: 얼굴이 포함되는 영상을 찍음을 전제함.-> 턱 좌표를 원점으로 :: 턱 x = 3, y = 7, z = 11
-    #face 4개 x= 1 to 4, body 12개 x= 13 to 24, 한 손 21개 right_x = 49 to 69, left_x = 112 to 132
+    #전제: 얼굴이 포함되는 영상을 찍음을 전제함.-> 턱 좌표를 원점으로 :: 턱 x = 2, y = 6, z = 10
+    #face 4개 x= 0 to 3, body 12개 x= 12 to 23, 한 손 21개 right_x = 48 to 68, left_x = 111 to 131
     #face y =                     y =                    right_y =           left_y =
     #face z =                     z =                    right_z =           left_z =
 twoD_array = np.array(twoD_list)
 #x 상대 좌표 처리
 #print(list(range(1, 5))+list(range(13, 25))+list(range(49, 70))+list(range(112, 133)))
-for i in list(range(1, 5))+list(range(13, 25))+list(range(49, 70))+list(range(112, 133)):
-    twoD_array[:, i] -= twoD_array[:, 3]
+for i in list(range(0, 4))+list(range(12, 24))+list(range(48, 69))+list(range(111, 132)):
+    twoD_array[:, i] -= twoD_array[:, 2]
 #y 상대 좌표
 
 #z 상대 좌표 처리
@@ -235,12 +235,13 @@ def preprocessing(img_array, flag = 0):
     if flag == 0: #bilinear-interpolation
         print("this is bilinear")
     else:         #nn-interpolation
-        for garo in range(img_array.shape[1]):
-            for sero in range(img_array.shape[0]):
-                if img_array[sero, garo] == 0:#------------is empty!
-                    if garo == 0:
+        for col in range(img_array.shape[1]):
+            for row in range(img_array.shape[0]):
+                if img_array[row, col] == 0:#------------is empty! Have to interpolate
+                    if row == 0:
                         continue
+                    #if
                     #제일 마지막에 아예 사라지는 값 처리
-                    interpolated_array[sero, garo] = img_array[sero-1, garo]
+                    interpolated_array[row, col] = img_array[row-1, col]
 
     return interpolated_array
