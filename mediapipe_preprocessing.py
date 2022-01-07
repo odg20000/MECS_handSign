@@ -213,9 +213,14 @@ twoD_array = np.array(twoD_list)
 #print(list(range(1, 5))+list(range(13, 25))+list(range(49, 70))+list(range(112, 133)))
 for i in list(range(0, 4))+list(range(12, 24))+list(range(48, 69))+list(range(111, 132)):
     twoD_array[:, i] -= twoD_array[:, 2]
-#y 상대 좌표
+    
+# y 상대 좌표
+for i in list(range(4, 8)) + list(range(24, 36)) + list(range(69, 90)) + list(range(132, 153)):
+    twoD_array[:, i] -= twoD_array[:, 6]
 
-#z 상대 좌표 처리
+# z 상대 좌표 처리
+for i in list(range(8, 12)) + list(range(36, 48)) + list(range(90, 111)) + list(range(153, 174)):
+    twoD_array[:, i] -= twoD_array[:, 10]
 
 df = pd.DataFrame(twoD_array)
 df.columns = csv_index[1:]
