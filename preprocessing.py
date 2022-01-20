@@ -75,6 +75,94 @@ csv_index = ['FRAME_NUM',
              'L_RING_FINGER_PIP_Z', 'L_RING_FINGER_DIP_Z', 'L_RING_FINGER_TIP_Z', 'L_PINKY_MCP_Z',
              'L_PINKY_PIP_Z', 'L_PINKY_DIP_Z', 'L_PINKY_TIP_Z']
 
+def extract_landmarks(results):
+    face = [10, 234, 152, 454]
+    body = range(11, 23)
+
+    # csv data list
+    total_list = []
+
+    face_list_x = []
+    face_list_y = []
+    face_list_z = []
+    pose_list_x = []
+    pose_list_y = []
+    pose_list_z = []
+    right_finger_list_x = []
+    right_finger_list_y = []
+    right_finger_list_z = []
+    left_finger_list_x = []
+    left_finger_list_y = []
+    left_finger_list_z = []
+
+    if results.face_landmarks is None:
+        face_list_x = [0 for i in range(4)]
+        face_list_y = [0 for i in range(4)]
+        face_list_z = [0 for i in range(4)]
+    else:
+        for face_index in face:
+            face_list_x.append(results.face_landmarks.landmark[face_index].x)
+            face_list_y.append(results.face_landmarks.landmark[face_index].y)
+            face_list_z.append(results.face_landmarks.landmark[face_index].z)
+
+    if results.pose_landmarks is None:
+        pose_list_x = [0 for i in range(12)]
+        pose_list_y = [0 for i in range(12)]
+        pose_list_z = [0 for i in range(12)]
+    else:
+        for pose_index in body:
+            pose_list_x.append(results.pose_landmarks.landmark[pose_index].x)
+            pose_list_y.append(results.pose_landmarks.landmark[pose_index].y)
+            pose_list_z.append(results.pose_landmarks.landmark[pose_index].z)
+
+    if results.left_hand_landmarks is None:
+        left_finger_list_x = [0 for i in range(21)]
+        left_finger_list_y = [0 for i in range(21)]
+        left_finger_list_z = [0 for i in range(21)]
+    else:
+        for finger_index_left in range(21):
+            left_finger_list_x.append(results.left_hand_landmarks.landmark[finger_index_left].x)
+            left_finger_list_y.append(results.left_hand_landmarks.landmark[finger_index_left].y)
+            left_finger_list_z.append(results.left_hand_landmarks.landmark[finger_index_left].z)
+
+    if results.right_hand_landmarks is None:
+        right_finger_list_x = [0 for i in range(21)]
+        right_finger_list_y = [0 for i in range(21)]
+        right_finger_list_z = [0 for i in range(21)]
+    else:
+        for finger_index_right in range(21):
+            right_finger_list_x.append(results.right_hand_landmarks.landmark[finger_index_right].x)
+            right_finger_list_y.append(results.right_hand_landmarks.landmark[finger_index_right].y)
+            right_finger_list_z.append(results.right_hand_landmarks.landmark[finger_index_right].z)
+
+    # x-> y-> z or all_x-> all_y-> all_z/////////////////////////////////////////////////////////////////////////////////////
+    total_list = face_list_x + face_list_y + face_list_z + \
+                 pose_list_x + pose_list_y + pose_list_z + \
+                 right_finger_list_x + right_finger_list_y + right_finger_list_z + \
+                 left_finger_list_x + left_finger_list_y + left_finger_list_z
+    return total_list
+def set_relative_axial(twoD_list):
+    # 각 좌표들의 정규화 필요
+    # 1. 모든 이미지 크기 동일화 = 원본이미지의 너비와 높이로 나눠주면 문제 없음.
+    # 하나의 죄표를 원점으로 하는 상대좌표 화가 필요 -> 절대로 인식되는 좌표를 원점으로!
+    # 전제: 얼굴이 포함되는 영상을 찍음을 전제함.-> 턱 좌표를 원점으로 :: 턱 x = 2, y = 6, z = 10
+    # face 4개 x= 0 to 3, body 12개 x= 12 to 23, 한 손 21개 right_x = 48 to 68, left_x = 111 to 131
+    # face y =                     y =                    right_y =           left_y =
+    # face z =                     z =                    right_z =           left_z =
+    twoD_array = np.array(twoD_list)
+    # x 상대 좌표 처리
+    # print(list(range(1, 5))+list(range(13, 25))+list(range(49, 70))+list(range(112, 133)))
+    for i in list(range(0, 4)) + list(range(12, 24)) + list(range(48, 69)) + list(range(111, 132)):
+        twoD_array[:, i] -= twoD_array[:, 2]
+    # y 상대 좌표
+    for i in list(range(4, 8)) + list(range(24, 36)) + list(range(69, 90)) + list(range(132, 153)):
+        twoD_array[:, i] -= twoD_array[:, 6]
+    # z 상대 좌표 처리
+    for i in list(range(8, 12)) + list(range(36, 48)) + list(range(90, 111)) + list(range(153, 174)):
+        twoD_array[:, i] -= twoD_array[:, 10]
+
+    return twoD_array
+
 def save_3csv_landmarks(source_path, file_name, csv_index):
     mp_drawing = mp.solutions.drawing_utils
     #mp_drawing_styles = mp.solutions.drawing_styles
@@ -117,67 +205,7 @@ def save_3csv_landmarks(source_path, file_name, csv_index):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = holistic.process(image)
 
-            # csv data list
-            total_list = []
-
-            face_list_x = []
-            face_list_y = []
-            face_list_z = []
-            pose_list_x = []
-            pose_list_y = []
-            pose_list_z = []
-            right_finger_list_x = []
-            right_finger_list_y = []
-            right_finger_list_z = []
-            left_finger_list_x = []
-            left_finger_list_y = []
-            left_finger_list_z = []
-
-            if results.face_landmarks is None:
-                face_list_x = [0 for i in range(4)]
-                face_list_y = [0 for i in range(4)]
-                face_list_z = [0 for i in range(4)]
-            else:
-                for face_index in face:
-                    face_list_x.append(results.face_landmarks.landmark[face_index].x)
-                    face_list_y.append(results.face_landmarks.landmark[face_index].y)
-                    face_list_z.append(results.face_landmarks.landmark[face_index].z)
-
-            if results.pose_landmarks is None:
-                pose_list_x = [0 for i in range(12)]
-                pose_list_y = [0 for i in range(12)]
-                pose_list_z = [0 for i in range(12)]
-            else:
-                for pose_index in body:
-                    pose_list_x.append(results.pose_landmarks.landmark[pose_index].x)
-                    pose_list_y.append(results.pose_landmarks.landmark[pose_index].y)
-                    pose_list_z.append(results.pose_landmarks.landmark[pose_index].z)
-
-            if results.left_hand_landmarks is None:
-                left_finger_list_x = [0 for i in range(21)]
-                left_finger_list_y = [0 for i in range(21)]
-                left_finger_list_z = [0 for i in range(21)]
-            else:
-                for finger_index_left in range(21):
-                    left_finger_list_x.append(results.left_hand_landmarks.landmark[finger_index_left].x)
-                    left_finger_list_y.append(results.left_hand_landmarks.landmark[finger_index_left].y)
-                    left_finger_list_z.append(results.left_hand_landmarks.landmark[finger_index_left].z)
-
-            if results.right_hand_landmarks is None:
-                right_finger_list_x = [0 for i in range(21)]
-                right_finger_list_y = [0 for i in range(21)]
-                right_finger_list_z = [0 for i in range(21)]
-            else:
-                for finger_index_right in range(21):
-                    right_finger_list_x.append(results.right_hand_landmarks.landmark[finger_index_right].x)
-                    right_finger_list_y.append(results.right_hand_landmarks.landmark[finger_index_right].y)
-                    right_finger_list_z.append(results.right_hand_landmarks.landmark[finger_index_right].z)
-
-            # x-> y-> z or all_x-> all_y-> all_z/////////////////////////////////////////////////////////////////////////////////////
-            total_list = face_list_x + face_list_y + face_list_z + \
-                         pose_list_x + pose_list_y + pose_list_z + \
-                         right_finger_list_x + right_finger_list_y + right_finger_list_z + \
-                         left_finger_list_x + left_finger_list_y + left_finger_list_z
+            total_list = extract_landmarks(results)
             #sys.stdout = open(file_name, 'a', newline='')
             #wr = csv.writer(sys.stdout)
             #wr.writerow([count] + [i for i in total_list])
@@ -206,26 +234,7 @@ def save_3csv_landmarks(source_path, file_name, csv_index):
 
     cap.release()
 
-
-# 각 좌표들의 정규화 필요
-# 1. 모든 이미지 크기 동일화 = 원본이미지의 너비와 높이로 나눠주면 문제 없음.
-# 하나의 죄표를 원점으로 하는 상대좌표 화가 필요 -> 절대로 인식되는 좌표를 원점으로!
-# 전제: 얼굴이 포함되는 영상을 찍음을 전제함.-> 턱 좌표를 원점으로 :: 턱 x = 2, y = 6, z = 10
-# face 4개 x= 0 to 3, body 12개 x= 12 to 23, 한 손 21개 right_x = 48 to 68, left_x = 111 to 131
-# face y =                     y =                    right_y =           left_y =
-# face z =                     z =                    right_z =           left_z =
-    twoD_array = np.array(twoD_list)
-# x 상대 좌표 처리
-# print(list(range(1, 5))+list(range(13, 25))+list(range(49, 70))+list(range(112, 133)))
-    for i in list(range(0, 4)) + list(range(12, 24)) + list(range(48, 69)) + list(range(111, 132)):
-        twoD_array[:, i] -= twoD_array[:, 2]
-    # y 상대 좌표
-    for i in list(range(4, 8)) + list(range(24, 36)) + list(range(69, 90)) + list(range(132, 153)):
-        twoD_array[:, i] -= twoD_array[:, 6]
-    # z 상대 좌표 처리
-    for i in list(range(8, 12)) + list(range(36, 48)) + list(range(90, 111)) + list(range(153, 174)):
-        twoD_array[:, i] -= twoD_array[:, 10]
-
+    twoD_array = set_relative_axial(twoD_list)
     df = pd.DataFrame(twoD_array)
     df.columns = csv_index[1:]
     # print(len(csv_index))
@@ -281,7 +290,7 @@ def preprocessing_inter(img_array, flag=0):
                     continue
                 else:  # 앞뒤로 값을 가지고 있는 경우!
                     if flag == 0:  # linear-interpolation
-                        print("this is linear")
+                        #print("this is linear")
                         interpolated_array[row, col] = (b['y'] - a['y']) / (b['x'] - a['x']) * (row - a['x']) + a['y']
                     else:  # nn-interpolation
                         interpolated_array[row, col] = a['y']
@@ -293,7 +302,39 @@ def preprocessing_inter(img_array, flag=0):
 #data argumentation
 #좌우 대칭으로 만들기 각 픽셀에-1 곱하면 될듯
 #10프레임을 사용하는것으로 가정한다면
-#모든 데이터들을 200개 프레임으로 RESCALE하고 20Hz으로 SAMPLING하기
-#이후에 20N+I의 19개 추가 데이터들 확보 가능
+#모든 데이터들을 100개 프레임으로 RESCALE하고 10Hz으로 SAMPLING하기
+#이후에 10N+I의 9개 추가 데이터들 확보 가능
 
 #몇프레임으로 학습시킬지에 대한 것은 여러개를 해봐야 알듯!
+def argumentation_save(video_keypoints, DATA_PATH, action, name, sampling_frame=10):
+    video_keypoints = cv2.resize(video_keypoints, dsize=(video_keypoints.shape[1], sampling_frame*10), interpolation=cv2.INTER_AREA)
+
+    #10배 데이터 증강
+    for i in range(10):
+        video_sampling = video_keypoints[i::10, :]
+        npy_path = os.path.join(DATA_PATH, action, name + f'-({i})')
+        np.save(npy_path, video_sampling)
+
+    # 좌우반전
+    for i in range(10):
+        video_sampling = video_keypoints[i::10, :]*(-1)
+        npy_path = os.path.join(DATA_PATH, action, name + f'-({10+i})')
+        np.save(npy_path, video_sampling)
+
+
+def argumentation(video_keypoints, sampling_frame=10):
+    video_keypoints = cv2.resize(video_keypoints, dsize=(video_keypoints.shape[1], sampling_frame * 10), interpolation=cv2.INTER_AREA)
+    sequence = []
+
+    # 10배 데이터 증강
+    for i in range(10):
+        video_sampling = video_keypoints[i::10, :]
+        sequence.append(video_sampling)
+
+    # 좌우반전
+    for i in range(10):
+        video_sampling = video_keypoints[i::10, :] * (-1)
+        sequence.append(video_sampling)
+
+    return np.array(sequence)
+
