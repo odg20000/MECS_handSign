@@ -9,7 +9,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
 
 #감사 데이터 부족, 위: 손가락 인식 모누 안됌 존경: 받침 손가락 제대로 인식불가
-label = ['THANKYOU', 'POLICE', 'HEAD', 'HELLO', 'DOWN', 'UP', 'HOME', 'RESPECT', 'FRIEND', 'DAD']
+label = ['THANKYOU', 'POLICE', 'HEAD', 'HELLO', 'DOWN', 'UP', 'HOME', 'RESPECT', 'FRIEND', 'DAD', 'STATIC']
 # Actions that we try to detect
 actions = np.array(label)
 
@@ -21,7 +21,7 @@ sentence = []
 new_model = keras.models.load_model('sign_language_action.h5')
 
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 117, 16), (117, 245, 16), (16, 117, 245),
-          (245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 117, 16)]
+          (245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 117, 16), (117, 245, 16)]
 def prob_viz(res, actions, input_frame, colors):
     output_frame = input_frame.copy()
     for num, prob in enumerate(res):
@@ -96,7 +96,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # Flip the image horizontally for a selfie-view display.
         if flag == 1:
             image = prob_viz(res, actions, image, colors)
-        image = cv2.resize(image, (600, 500))
+        image = cv2.resize(image, (1500, 1000))
         cv2.imshow('MediaPipe Hands', image)
 
         if cv2.waitKey(5) & 0xFF == 27:
